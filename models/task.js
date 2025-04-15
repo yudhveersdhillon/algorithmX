@@ -6,6 +6,11 @@ const taskSchema = new mongoose.Schema(
         title: {
             type: String,
         },
+        userId: {
+            type: Schema.Types.ObjectId,
+            ref: "User", 
+            required: true, 
+          },
         description: {
             type: String,
         },
@@ -15,7 +20,7 @@ const taskSchema = new mongoose.Schema(
           },
           status: {
             type: Number,
-            default: 1, // or CONFIG.ACTIVE_STATUS
+            default: 1, 
             index: true,
           },
     },

@@ -44,16 +44,15 @@ exports.login = async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user._id, email: user.email }, SECRET_KEY, { expiresIn: "7d" });
-    user.token = token;
-
-    user.password = undefined;
-    return res.status(200).json({ message: "Login successful", user });
+    const result = user.toObject();
+    result.token = token;
+    result.password = undefined;
+    return res.status(200).json({ message: "Login successful", result });
   } catch (err) {
     console.error("Login error:", err);
     return res.status(500).json({ message: "Server error" });
   }
 };
-
 
 exports.taskCreate = async (req, res) => {
     try {
@@ -61,9 +60,9 @@ exports.taskCreate = async (req, res) => {
       const task = await Task.findOne({ title });
       if (task) {
         return res.status(400).json({ message: "Same Task already Exists" });
-      }
-  
-      const taskData = new Task(req.body); 
+      }  
+      let taskData = new Task(req.body);
+      taskData.userId=req.user._id;
       await taskData.save();
   
       return res.status(200).json({ message: "Task Created successfully", taskData });
@@ -113,7 +112,7 @@ exports.taskCreate = async (req, res) => {
     try {
       const { taskId } = req.params;  
       const deletedTask = await Task.findByIdAndDelete(taskId);
-      
+      //hard delete done but if want to do soft Delete then update the status
       if (!deletedTask) {
         return res.status(404).json({ message: "Task not found" });
       }
@@ -131,7 +130,7 @@ exports.taskCreate = async (req, res) => {
       
       const tasks = await Task.findOne({ _id:taskId }); 
   
-      if (!tasks.length) {
+      if (!tasks) {
         return res.status(404).json({ message: "No tasks found for this user" });
       }
   

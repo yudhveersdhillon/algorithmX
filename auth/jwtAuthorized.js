@@ -3,6 +3,7 @@ const jwtUtil = require("../utils/JwtUtils");
 
 module.exports = async (req, res, next) => {
   try {
+    
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
@@ -15,17 +16,19 @@ module.exports = async (req, res, next) => {
       return res.status(401).json({ message: "Invalid token format" });
     }
 
+
     const decoded = await jwtUtil.verify(token);
-    if (!decoded || !decoded._id) {
+    
+    if (!decoded || !decoded.userId) {
       return res.status(401).json({ message: "Invalid or expired token" });
     }
 
-    const user = await User.findById(decoded._id).lean();
+    const user = await User.findById(decoded.userId).lean();
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    req.user = user; // Attach user to request for use in routes
+    req.user = user;
     next();
   } catch (err) {
     console.error("JWT Middleware Error:", err.message);
